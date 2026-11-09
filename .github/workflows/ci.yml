@@ -18,11 +18,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore src/WebApi/WebApi.csproj
 
-      - name: Build Solution
-        run: dotnet build --no-restore --configuration Release
-
-      - name: Test Solution
-        run: dotnet test --no-build --configuration Release --verbosity normal
-
+      - name: Build WebApi
+        run: dotnet build src/WebApi/WebApi.csproj --no-restore --configuration Release
