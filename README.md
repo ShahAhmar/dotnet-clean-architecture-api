@@ -6,7 +6,46 @@
 [![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](docker-compose.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0F172A.svg?style=flat-square)](LICENSE)
 
-A production-grade RESTful API engineered with **ASP.NET Core 8**, adhering to **Clean Architecture**, **CQRS (Command Query Responsibility Segregation)** with MediatR, and **Domain-Driven Design (DDD)** principles.
+A production-grade RESTful API engineered with **ASP.NET Core 8**, adhering strictly to **Clean Architecture**, **CQRS (Command Query Responsibility Segregation)** with MediatR, and **Domain-Driven Design (DDD)** principles.
+
+[Architecture Topology](#clean-architecture-structure) &bull; [Core Capabilities](#core-system-functionalities) &bull; [Quick Start](#quick-start-docker)
+
+---
+
+## System Objective: Why This System Exists
+
+Enterprise web backends frequently fail to scale because business domain logic becomes tightly coupled to web frameworks, direct database models, or external third-party SDKs. When requirements change, refactoring creates cascading breaking changes across the codebase.
+
+This project exists as a reference implementation of **Clean Architecture** in .NET 8:
+1. **Decoupled Business Rules:** The Domain and Application layers maintain zero dependencies on database engines, ORMs, or UI frameworks.
+2. **Predictable CQRS Pipelines:** Read and write responsibilities are cleanly bifurcated using MediatR request handlers with automatic pipeline behaviors for validation and logging.
+3. **Enterprise Maintainability:** Standardized patterns allowing seamless swapping of infrastructure adapters (e.g., PostgreSQL, SQL Server, Redis) without touching domain logic.
+
+---
+
+## Technical Stack Breakdown
+
+- **Runtime & Language:** .NET 8.0 SDK, C# 12 (Nullable reference types, records, pattern matching)
+- **Web API Framework:** ASP.NET Core Web API (Kestrel HTTP server, dependency injection container)
+- **Mediator Pattern & CQRS:** MediatR 12 (Decoupled command and query dispatcher)
+- **Data Validation:** FluentValidation (Pipeline-level strongly typed rule validation)
+- **Persistence & ORM:** Entity Framework Core 8 (Code-First migrations, auditable entities)
+- **Database Driver:** Npgsql PostgreSQL EntityFrameworkCore provider
+- **Distributed Caching:** StackExchange.Redis (Cache-aside pattern, distributed lock abstraction)
+- **API Specification:** Swashbuckle OpenAPI / Swagger UI
+- **Testing Subsystem:** xUnit, FluentAssertions, Moq
+- **Containerization:** Multi-stage Linux Docker build targeting Alpine-based ASP.NET runtime
+
+---
+
+## Core System Functionalities
+
+1. **CQRS Command & Query Separation:** Mutating actions (`CreateArticleCommand`, `PublishArticleCommand`) and read operations (`GetArticlesQuery`) are modeled as isolated, single-responsibility handlers.
+2. **Pipeline Middleware Behaviors:** MediatR pipeline automatically intercepts all commands before reaching handlers, validating payload schemas via FluentValidation and halting invalid requests immediately.
+3. **Auditable Domain Entities:** Base entity abstractions automatically track state transitions (`CreatedAt`, `ModifiedAt`, `CreatedBy`, `Status`).
+4. **Distributed Cache-Aside Pattern:** Redis caching layer with automated cache invalidation executed whenever domain mutations occur.
+5. **Global Error Interception:** Custom exception handling middleware that catches domain and validation errors, transforming them into RFC 7807 compliant Problem Details responses.
+6. **Containerized Multi-Service Orchestration:** Single-command local environment bootstrapping with isolated containers for the Web API, PostgreSQL database, and Redis cache.
 
 ---
 
@@ -50,28 +89,27 @@ flowchart TD
 
 ---
 
-## Engineering Standards & Architecture Highlights
+## Security & Enterprise Standards
 
-- **MediatR Pipeline Behaviors:** Automatic request validation (FluentValidation), unhandled exception interception, and structured performance metrics logging.
-- **Entity Framework Core 8:** Code-First migrations, soft delete interceptors, and auditable entity base abstractions (`CreatedAt`, `ModifiedAt`, `CreatedBy`).
-- **Distributed Caching:** Redis cache-aside pattern with automated cache invalidation on command mutations.
-- **Security:** JWT authentication with refresh token rotation and claim-based authorization policies.
-- **Containerization:** Multi-stage production `Dockerfile` and `docker-compose.yml` for isolated container orchestration.
+- **Parameter Tamper Prevention:** Domain entities enforce invariant checks; invalid states cannot be instantiated.
+- **SQL Injection Elimination:** 100% parameterized queries generated through Entity Framework Core.
+- **Strict Layer Isolation:** Architecture guidelines prevent outer infrastructure code from leaking into inner domain contracts.
+- **Config Security:** Sensitive configuration parameters (connection strings, tokens) are extracted to environment variables.
 
 ---
 
 ## Quick Start (Docker)
 
 ```bash
-# Clone repository
+# 1. Clone repository
 git clone https://github.com/ShahAhmar/dotnet-clean-architecture-api.git
 cd dotnet-clean-architecture-api
 
-# Start services via Docker Compose (App + PostgreSQL + Redis)
+# 2. Start services via Docker Compose (App + PostgreSQL + Redis)
 docker compose up -d --build
 ```
 
-Access Swagger UI documentation at: `http://localhost:5000/swagger`
+Access interactive Swagger documentation at: `http://localhost:5000/swagger`
 
 ---
 
