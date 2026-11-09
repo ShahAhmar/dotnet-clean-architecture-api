@@ -1,0 +1,50 @@
+services:
+  webapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dotnet_clean_webapi
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres_db;Port=5432;Database=clean_arch_db;Username=postgres;Password=secret_password"
+      Redis__ConnectionString: "redis_cache:6379"
+    depends_on:
+      - postgres_db
+      - redis_cache
+    networks:
+      - dotnet_net
+
+  postgres_db:
+    image: postgres:16-alpine
+    container_name: dotnet_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: clean_arch_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - dotnet_pgdata:/var/lib/postgresql/data
+    networks:
+      - dotnet_net
+
+  redis_cache:
+    image: redis:7-alpine
+    container_name: dotnet_redis
+    restart: unless-stopped
+    ports:
+      - "6381:6379"
+    networks:
+      - dotnet_net
+
+networks:
+  dotnet_net:
+    driver: bridge
+
+volumes:
+  dotnet_pgdata:
+
